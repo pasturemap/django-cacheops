@@ -75,7 +75,7 @@ else:
             # Make in memory sqlite test db to work with threads
             # See https://code.djangoproject.com/ticket/12118
             'TEST': {
-                'NAME': '/dev/shm/cacheops_sqlite.db'
+                'NAME': 'file:cacheops_sqlite.db?mode=memory&cache=shared'
             }
         },
         'slave': {
