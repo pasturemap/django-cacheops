@@ -2,6 +2,8 @@
 import sys
 import json
 import threading
+from random import random
+
 import six
 from six.moves import range
 from funcy import select_keys, cached_property, once, once_per, monkey, wraps, walk, chain
@@ -99,6 +101,8 @@ def cached_as(*samples, **kwargs):
     if lock is None:
         lock = any(qs._cacheprofile['lock'] for qs in querysets)
 
+    cached_as.nonce = 0
+
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -106,8 +110,7 @@ def cached_as(*samples, **kwargs):
                 return func(*args, **kwargs)
 
             prefix = get_prefix(func=func, _cond_dnfs=cond_dnfs, dbs=dbs)
-            key_suffix = key_func(func, args, kwargs, key_extra)
-            cache_key = prefix + 'as:' + key_suffix
+            cache_key = prefix + 'as:' + key_func(func, args, kwargs, key_extra)
 
             with redis_client.getting(cache_key, lock=lock) as cache_data:
                 cache_read.send(sender=None, func=func, hit=cache_data is not None)
@@ -119,8 +122,11 @@ def cached_as(*samples, **kwargs):
                     return result
                 else:
                     # We call this "asp" for "as precall" because this key is
-                    # cached before the actual function is called.
-                    precall_key = prefix + 'asp:' + key_suffix
+                    # cached before the actual function is called. We randomize
+                    # the key to prevent falsely thinking the key was not
+                    # invalidated when in fact it was invalidated and the
+                    # function was called again in another process.
+                    precall_key = prefix + 'asp:' + key_func(func, args, kwargs, key_extra + [random()])
                     for retry_count in range(max_retry_count):
                         # Retry calling the function until we get a valid
                         # result.
