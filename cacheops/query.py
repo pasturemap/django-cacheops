@@ -100,8 +100,6 @@ def cached_as(*samples, **kwargs):
     if lock is None:
         lock = any(qs._cacheprofile['lock'] for qs in querysets)
 
-    cached_as.nonce = 0
-
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
