@@ -23,7 +23,7 @@ from .utils import monkey_mix, stamp_fields, func_cache_key, cached_view_fab, fa
 from .sharding import get_prefix
 from .redis import redis_client, handle_connection_failure, load_script
 from .tree import dnfs
-from .invalidation import invalidate_obj, invalidate_dict, no_invalidation, redis_can_unlink, invalidate_key
+from .invalidation import invalidate_obj, invalidate_dict, no_invalidation, invalidate_keys
 from .transaction import transaction_states
 from .signals import cache_read
 
@@ -144,7 +144,7 @@ def cached_as(*samples, **kwargs):
                         cache_thing(prefix, cache_key, result, cond_dnfs, timeout, dbs=dbs)
                         if redis_client.get(precall_key) is None:
                             # Key was invalidated while caching. Retry.
-                            invalidate_key(cache_key)
+                            invalidate_keys(cache_key)
                             continue
 
                         return result
