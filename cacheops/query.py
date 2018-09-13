@@ -2,10 +2,9 @@
 import sys
 import json
 import threading
-from random import random
-
 import six
 from six.moves import range
+from random import random
 from funcy import select_keys, cached_property, once, once_per, monkey, wraps, walk, chain
 from funcy.py3 import lmap, map, lcat, join_with
 from .cross import pickle, md5
