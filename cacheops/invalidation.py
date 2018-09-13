@@ -23,6 +23,13 @@ def redis_can_unlink():
     return StrictVersion(redis_version) >= StrictVersion('4.0')
 
 
+def invalidate_key(cache_key):
+    if redis_can_unlink():
+        redis_client.execute_command('UNLINK', cache_key)
+    else:
+        redis_client.delete(cache_key)
+
+
 @queue_when_in_transaction
 @handle_connection_failure
 def invalidate_dict(model, obj_dict, using=DEFAULT_DB_ALIAS):
